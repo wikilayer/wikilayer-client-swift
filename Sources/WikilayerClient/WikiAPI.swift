@@ -76,7 +76,7 @@ public struct WikiAPI: Sendable {
     }
 
     public func wikis(
-        matching query: String = "",
+        matching query: String,
         limit: Int,
         offset: Int = 0
     ) async throws -> WikiPage {
