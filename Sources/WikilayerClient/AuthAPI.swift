@@ -17,6 +17,16 @@ public struct OAuthClient: Sendable, Equatable {
     }
 }
 
+public struct AuthorizationRequest: Sendable, Equatable {
+    public let url: URL
+    public let host: URL
+
+    public init(url: URL, host: URL) {
+        self.url = url
+        self.host = host
+    }
+}
+
 public struct AuthAPI: Sendable {
     private let hosts: WikiHostPool
     private let transport: JSONTransport
@@ -33,7 +43,7 @@ public struct AuthAPI: Sendable {
         identityToken: String,
         nameOfferedOnce: String = ""
     ) async throws -> Credential {
-        try await onAvailableHost(in: hosts) { host in
+        try await onSelectedHost(in: hosts) { host in
             var request = URLRequest(url: host.appending(path: "api/auth/\(provider.rawValue)"))
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -46,8 +56,27 @@ public struct AuthAPI: Sendable {
     }
 
     public func authorizationURL(provider: String, state: String, challenge: String) async -> URL? {
-        guard let host = await hosts.candidates().first else { return nil }
-        return AskedQuery.url(host.appending(path: "oauth/authorize"), [
+        await authorizationRequests(provider: provider, state: state, challenge: challenge).first?.url
+    }
+
+    public func authorizationRequests(
+        provider: String,
+        state: String,
+        challenge: String
+    ) async -> [AuthorizationRequest] {
+        await hosts.candidates().compactMap { host in
+            guard let url = authorizationURL(
+                at: host,
+                provider: provider,
+                state: state,
+                challenge: challenge
+            ) else { return nil }
+            return AuthorizationRequest(url: url, host: host)
+        }
+    }
+
+    private func authorizationURL(at host: URL, provider: String, state: String, challenge: String) -> URL? {
+        AskedQuery.url(host.appending(path: "oauth/authorize"), [
             URLQueryItem(name: "client_id", value: client.id),
             URLQueryItem(name: "redirect_uri", value: client.redirectURI),
             URLQueryItem(name: "response_type", value: "code"),
@@ -60,7 +89,13 @@ public struct AuthAPI: Sendable {
     }
 
     public func exchange(code: String, verifier: String) async throws -> Credential {
-        try await onAvailableHost(in: hosts) { host in
+        try await onSelectedHost(in: hosts) { host in
+            try await exchange(code: code, verifier: verifier, at: host)
+        }
+    }
+
+    public func exchange(code: String, verifier: String, at host: URL) async throws -> Credential {
+        do {
             var request = URLRequest(url: host.appending(path: "oauth/token"))
             request.httpMethod = "POST"
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -72,6 +107,10 @@ public struct AuthAPI: Sendable {
                 "redirect_uri": client.redirectURI
             ]).utf8)
             return try await transport.value(TokenGrant.self, from: request).credential()
+        } catch let error as URLError {
+            throw WikiAPIError.unreachable([
+                WikiHostFailure(host: host, reason: .network(error.code.rawValue))
+            ])
         }
     }
 
@@ -94,7 +133,7 @@ public struct AuthAPI: Sendable {
     }
 
     public func signOut(_ credential: Credential) async throws {
-        _ = try await onAvailableHost(in: hosts) { host in
+        _ = try await onSelectedHost(in: hosts) { host in
             try await transport.data(
                 from: signed(host: host, path: "api/auth/signout", method: "POST", by: credential)
             )

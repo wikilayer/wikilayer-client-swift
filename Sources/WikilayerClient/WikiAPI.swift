@@ -3,7 +3,7 @@ import Foundation
 public enum WikiAPIError: Error, Sendable, Equatable {
     case status(Int)
     case malformed(String)
-    case unreachable(String)
+    case unreachable([WikiHostFailure])
 }
 
 public struct WikiAPI: Sendable {

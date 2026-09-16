@@ -14,7 +14,7 @@ test-build:
 test:
 	swift test
 
-build: format lint test
+build: lint test
 
 install:
 	brew install swiftlint

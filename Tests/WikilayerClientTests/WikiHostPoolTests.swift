@@ -70,13 +70,40 @@ struct WikiHostPoolTests {
 
     @Test("when every host is unreachable the caller can offer a VPN")
     func allBlocked() async {
+        HostProtocol.reset()
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [HostProtocol.self]
         let blocked = URL(string: "https://blocked.example") ?? URL.temporaryDirectory
         let api = WikiAPI(baseURL: blocked, session: URLSession(configuration: config))
 
-        await #expect(throws: WikiAPIError.self) {
+        do {
             _ = try await api.wikis()
+            Issue.record("an unreachable host answered")
+        } catch WikiAPIError.unreachable(let failures) {
+            #expect(failures == [
+                WikiHostFailure(host: blocked, reason: .network(URLError.Code.timedOut.rawValue))
+            ])
+        } catch {
+            Issue.record("the wrong error came back: \(error)")
         }
+    }
+
+    @Test("a one-shot identity token is never retried on a mirror")
+    func identityTokenIsNotRetried() async {
+        HostProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [HostProtocol.self]
+        let blocked = URL(string: "https://blocked.example") ?? URL.temporaryDirectory
+        let mirror = URL(string: "https://mirror.example") ?? URL.temporaryDirectory
+        let auth = AuthAPI(
+            hosts: WikiHostPool(primary: blocked, mirrors: [mirror]),
+            client: OAuthClient(id: "app", redirectURI: "app:/oauth", scope: "app"),
+            session: URLSession(configuration: config)
+        )
+
+        await #expect(throws: WikiAPIError.self) {
+            _ = try await auth.signIn(with: .apple, identityToken: "one-shot")
+        }
+        #expect(HostProtocol.asked == ["blocked.example"])
     }
 }
