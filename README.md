@@ -15,12 +15,11 @@ decides how an arrived `SyncNode` is stored and when another pass starts.
 Add the package dependency and the `WikilayerClient` product:
 
 ```swift
-.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.1.0")
+.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.1.1")
 ```
 
 ```swift
-let host = URL(string: "https://wikilayer.org")!
-let hosts = WikiHostPool(primary: host)
+let hosts = WikiHostConfiguration.bundled.pool()
 let api = WikiAPI(hosts: hosts)
 
 let directory = try await api.wikis(matching: "markdown")
@@ -29,7 +28,9 @@ let batch = try await api.sync(wikiID: 2982, after: nil)
 
 ## Mirrors and blocked networks
 
-`WikiHostPool` takes the primary server and any mirrors. A request tries the next
+The library owns the primary server and mirrors in its bundled `hosts.yaml`.
+Applications start from `WikiHostConfiguration.bundled` instead of copying host
+addresses into their own configuration. `WikiHostPool` then tries the next
 host after a network failure such as a timeout, or after an HTTP status explicitly
 configured as a blocking response (`451` by default). Other HTTP refusals remain
 the server's answer and are not hidden by another host. A host that succeeds
@@ -50,8 +51,8 @@ HTTP failure. The app can distinguish that outcome from an ordinary HTTP status
 and tell a reader that the service may require a VPN. The library does not word or
 present that message.
 
-Wikilayer currently has no mirror, so applications configure only
-`https://wikilayer.org`.
+Wikilayer currently has no mirror, so the bundled list is empty. Adding one is a
+library configuration release and requires no application change.
 
 ## Running it
 

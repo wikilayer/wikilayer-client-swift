@@ -12,7 +12,7 @@ remain with the application.
 Create one shared ``WikiHostPool`` and give it to each service:
 
 ```swift
-let hosts = WikiHostPool(primary: URL(string: "https://wikilayer.org")!)
+let hosts = WikiHostConfiguration.bundled.pool()
 let wiki = WikiAPI(hosts: hosts)
 let directory = try await wiki.wikis(matching: "markdown")
 ```
@@ -41,6 +41,7 @@ statuses. One-use authentication operations are never retried. See
 ### Hosts and failures
 
 - <doc:HostsAndMirrors>
+- ``WikiHostConfiguration``
 - ``WikiHostPool``
 - ``WikiHostFailure``
 - ``WikiAPIError``

@@ -1,6 +1,8 @@
 # Hosts and Mirrors
 
-Share one ``WikiHostPool`` between the API, authentication, and live channel.
+Start with ``WikiHostConfiguration/bundled``, whose `hosts.yaml` belongs to this
+library, and share its ``WikiHostPool`` between the API, authentication, and live
+channel. Applications do not copy or own the server addresses.
 
 The pool starts with a primary host and may receive ordered mirrors. Safe reads
 advance after transport failures and configured blocking statuses; HTTP 451 is
@@ -12,5 +14,5 @@ changes. If every candidate fails, ``WikiAPIError/unreachable(_:)`` carries a
 unreachable service from an ordinary server refusal and decide whether to suggest
 a VPN.
 
-Wikilayer currently has no mirror, so production applications should configure
-only `https://wikilayer.org` until another endpoint exists.
+Wikilayer currently has no mirror, so the bundled list is empty. A later library
+release can add one without changing an application configuration.
