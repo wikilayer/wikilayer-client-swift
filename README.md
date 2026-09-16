@@ -54,3 +54,11 @@ Wikilayer currently has no mirror, so applications configure only
 make test
 make lint
 ```
+
+## Lines of Code
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/loc-history-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/loc-history-light.svg">
+  <img src=".github/loc-history.svg" alt="Lines of code over time">
+</picture>
