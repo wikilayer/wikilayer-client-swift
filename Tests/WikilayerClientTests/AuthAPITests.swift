@@ -57,11 +57,12 @@ struct AuthAPITests {
         let secret = PKCE()
         let (api, _) = stubbedAuth()
 
-        let start = try #require(await api.authorizationURL(
+        let request = try #require(await api.authorizationRequest(
             provider: "github",
             state: secret.state,
             challenge: secret.challenge
         ))
+        let start = request.url
 
         let asked = try #require(URLComponents(url: start, resolvingAgainstBaseURL: false)?.queryItems)
         func value(_ name: String) -> String? { asked.first { $0.name == name }?.value }
@@ -84,7 +85,12 @@ struct AuthAPITests {
         let (api, stub) = stubbedAuth()
         stub.answers(#"{"access_token":"ours","expires_in":3600}"#)
 
-        _ = try await api.exchange(code: "code+with/reserved=", verifier: "verifier")
+        let request = try #require(await api.authorizationRequest(
+            provider: "github",
+            state: "state",
+            challenge: "challenge"
+        ))
+        _ = try await api.exchange(code: "code+with/reserved=", verifier: "verifier", for: request)
 
         let asked = try #require(stub.lastAsked)
         #expect(asked.url?.absoluteString.hasSuffix("/oauth/token") == true)

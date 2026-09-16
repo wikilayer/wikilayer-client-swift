@@ -25,10 +25,11 @@ private final class HostProtocol: URLProtocol, @unchecked Sendable {
             client?.urlProtocol(self, didFailWithError: URLError(.timedOut))
             return
         }
+        let status = host == "censored.example" ? 451 : 200
         guard let url = request.url,
               let response = HTTPURLResponse(
                   url: url,
-                  statusCode: 200,
+                  statusCode: status,
                   httpVersion: nil,
                   headerFields: ["Content-Type": "application/json"]
               )
@@ -37,7 +38,10 @@ private final class HostProtocol: URLProtocol, @unchecked Sendable {
             return
         }
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Data(#"{"wikis":[],"has_more":false}"#.utf8))
+        let body = request.url?.path.hasSuffix("/api/auth/apple") == true
+            ? #"{"access_token":"ours","expires_in":3600}"#
+            : #"{"wikis":[],"has_more":false}"#
+        client?.urlProtocol(self, didLoad: Data(body.utf8))
         client?.urlProtocolDidFinishLoading(self)
     }
 
@@ -103,6 +107,84 @@ struct WikiHostPoolTests {
 
         await #expect(throws: WikiAPIError.self) {
             _ = try await auth.signIn(with: .apple, identityToken: "one-shot")
+        }
+        #expect(HostProtocol.asked == ["blocked.example"])
+    }
+
+    @Test("a safe preflight selects the mirror before a one-shot identity token exists")
+    func preflightBeforeIdentityToken() async throws {
+        HostProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [HostProtocol.self]
+        let blocked = URL(string: "https://blocked.example") ?? URL.temporaryDirectory
+        let mirror = URL(string: "https://mirror.example") ?? URL.temporaryDirectory
+        let auth = AuthAPI(
+            hosts: WikiHostPool(primary: blocked, mirrors: [mirror]),
+            client: OAuthClient(id: "app", redirectURI: "app:/oauth", scope: "app"),
+            session: URLSession(configuration: config)
+        )
+
+        try await auth.prepareHost()
+        _ = try await auth.signIn(with: .apple, identityToken: "one-shot")
+
+        #expect(HostProtocol.asked == ["blocked.example", "mirror.example", "mirror.example"])
+    }
+
+    @Test("an HTTP 451 advances to the mirror")
+    func censoredHostFailsOver() async throws {
+        HostProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [HostProtocol.self]
+        let censored = URL(string: "https://censored.example") ?? URL.temporaryDirectory
+        let mirror = URL(string: "https://mirror.example") ?? URL.temporaryDirectory
+        let api = WikiAPI(
+            hosts: WikiHostPool(primary: censored, mirrors: [mirror]),
+            session: URLSession(configuration: config)
+        )
+
+        _ = try await api.wikis()
+
+        #expect(HostProtocol.asked == ["censored.example", "mirror.example"])
+    }
+
+    @Test("an authorization code stays bound to its host and is never retried")
+    func authorizationCodeIsNotRetried() async {
+        HostProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [HostProtocol.self]
+        let blocked = URL(string: "https://blocked.example") ?? URL.temporaryDirectory
+        let mirror = URL(string: "https://mirror.example") ?? URL.temporaryDirectory
+        let auth = AuthAPI(
+            hosts: WikiHostPool(primary: blocked, mirrors: [mirror]),
+            client: OAuthClient(id: "app", redirectURI: "app:/oauth", scope: "app"),
+            session: URLSession(configuration: config)
+        )
+        let request = AuthorizationRequest(
+            url: blocked.appending(path: "oauth/authorize"),
+            host: blocked
+        )
+
+        await #expect(throws: WikiAPIError.self) {
+            _ = try await auth.exchange(code: "one-shot", verifier: "secret", for: request)
+        }
+        #expect(HostProtocol.asked == ["blocked.example"])
+    }
+
+    @Test("signing out is never repeated on a mirror")
+    func signOutIsNotRetried() async {
+        HostProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [HostProtocol.self]
+        let blocked = URL(string: "https://blocked.example") ?? URL.temporaryDirectory
+        let mirror = URL(string: "https://mirror.example") ?? URL.temporaryDirectory
+        let auth = AuthAPI(
+            hosts: WikiHostPool(primary: blocked, mirrors: [mirror]),
+            client: OAuthClient(id: "app", redirectURI: "app:/oauth", scope: "app"),
+            session: URLSession(configuration: config)
+        )
+
+        await #expect(throws: WikiAPIError.self) {
+            try await auth.signOut(Credential(token: "ours"))
         }
         #expect(HostProtocol.asked == ["blocked.example"])
     }

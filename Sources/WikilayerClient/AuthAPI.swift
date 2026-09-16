@@ -19,12 +19,7 @@ public struct OAuthClient: Sendable, Equatable {
 
 public struct AuthorizationRequest: Sendable, Equatable {
     public let url: URL
-    public let host: URL
-
-    public init(url: URL, host: URL) {
-        self.url = url
-        self.host = host
-    }
+    let host: URL
 }
 
 public struct AuthAPI: Sendable {
@@ -55,23 +50,27 @@ public struct AuthAPI: Sendable {
         }
     }
 
-    public func authorizationURL(provider: String, state: String, challenge: String) async -> URL? {
-        await authorizationRequests(provider: provider, state: state, challenge: challenge).first?.url
+    /// Selects a reachable host before the caller obtains a one-use provider token.
+    public func prepareHost() async throws {
+        _ = try await onAvailableHost(in: hosts) { host in
+            var request = URLRequest(url: host.appending(path: "api/wikis"))
+            request.httpMethod = "GET"
+            return try await transport.data(from: request)
+        }
     }
 
-    public func authorizationRequests(
+    public func authorizationRequest(
         provider: String,
         state: String,
         challenge: String
-    ) async -> [AuthorizationRequest] {
-        await hosts.candidates().compactMap { host in
-            guard let url = authorizationURL(
+    ) async -> AuthorizationRequest? {
+        await hosts.candidates().first.flatMap { host in
+            authorizationURL(
                 at: host,
                 provider: provider,
                 state: state,
                 challenge: challenge
-            ) else { return nil }
-            return AuthorizationRequest(url: url, host: host)
+            ).map { AuthorizationRequest(url: $0, host: host) }
         }
     }
 
@@ -88,13 +87,12 @@ public struct AuthAPI: Sendable {
         ])
     }
 
-    public func exchange(code: String, verifier: String) async throws -> Credential {
-        try await onSelectedHost(in: hosts) { host in
-            try await exchange(code: code, verifier: verifier, at: host)
-        }
-    }
-
-    public func exchange(code: String, verifier: String, at host: URL) async throws -> Credential {
+    public func exchange(
+        code: String,
+        verifier: String,
+        for authorization: AuthorizationRequest
+    ) async throws -> Credential {
+        let host = authorization.host
         do {
             var request = URLRequest(url: host.appending(path: "oauth/token"))
             request.httpMethod = "POST"

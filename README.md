@@ -33,10 +33,11 @@ and save changes with `didSelect` if that choice must survive relaunches.
 
 Reads may move to the next host automatically. One-shot authentication operations
 do not: an identity token or authorization code may already have been consumed
-when only its response was lost. Browser OAuth exposes an ordered
-`authorizationRequests` list; an app can try the next URL after the system browser
-reports that a host could not be opened. The code exchange stays on the host that
-issued the authorization request.
+when only its response was lost. Call `AuthAPI.prepareHost()` before asking Apple,
+Google or another provider for a one-use token. Browser OAuth then creates one
+opaque `AuthorizationRequest`; its code exchange is bound to the same host. A
+provider refusal, malformed callback or failed exchange is returned immediately,
+never mistaken for a reason to begin another sign-in against a mirror.
 
 When every configured host fails at the network level, the client throws
 `WikiAPIError.unreachable`, carrying every attempted host and its typed network or
