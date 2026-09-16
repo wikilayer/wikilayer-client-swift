@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Build, lint and test
+        run: make build

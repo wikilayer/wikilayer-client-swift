@@ -1,0 +1,79 @@
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - Package.swift
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_filter_count
+  - discouraged_optional_boolean
+  - discouraged_optional_collection
+  - empty_count
+  - empty_string
+  - explicit_init
+  - fatal_error_message
+  - first_where
+  - flatmap_over_map_reduce
+  - force_unwrapping
+  - function_default_parameter_at_end
+  - identical_operands
+  - implicitly_unwrapped_optional
+  - joined_default_parameter
+  - last_where
+  - multiline_arguments
+  - multiline_parameters
+  - operator_usage_whitespace
+  - overridden_super_call
+  - prefer_zero_over_explicit_init
+  - reduce_into
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - sorted_first_last
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+
+analyzer_rules:
+  - unused_import
+
+identifier_name:
+  excluded:
+    - id
+
+line_length:
+  warning: 170
+  error: 200
+
+function_body_length:
+  warning: 50
+  error: 75
+
+force_cast: error
+force_try: error
+force_unwrapping: error
+implicitly_unwrapped_optional: error
+
+multiline_arguments:
+  first_argument_location: next_line
+
+multiline_parameters:
+  allows_single_line: true
+
+vertical_parameter_alignment: error
+
+custom_rules:
+  no_try_optional:
+    name: "No Optional Try"
+    regex: "\\btry\\?"
+    message: "Avoid try? — handle errors explicitly with do/catch"
+    severity: error
+  no_print:
+    name: "No print"
+    regex: "(^|[^\\w.])print\\("
+    message: "Debug output belongs to the consuming application's logger"
+    severity: error
