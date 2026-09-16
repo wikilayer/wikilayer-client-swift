@@ -1,8 +1,13 @@
+[![Tests](https://github.com/wikilayer/wikilayer-client-swift/actions/workflows/tests.yml/badge.svg)](https://github.com/wikilayer/wikilayer-client-swift/actions/workflows/tests.yml)
+[![Documentation](https://github.com/wikilayer/wikilayer-client-swift/actions/workflows/documentation.yml/badge.svg)](https://wikilayer.github.io/wikilayer-client-swift/documentation/wikilayerclient/)
+
 # Wikilayer Client for Swift
 
 The Swift client for the Wikilayer API. It owns the requests and responses that
 cross the network: authentication, the public directory, address resolution,
 wiki synchronisation and the live change channel.
+
+[Read the generated API documentation.](https://wikilayer.github.io/wikilayer-client-swift/documentation/wikilayerclient/)
 
 It does not own a local database, screen state or background scheduling. An app
 decides how an arrived `SyncNode` is stored and when another pass starts.
@@ -53,6 +58,7 @@ Wikilayer currently has no mirror, so applications configure only
 ```sh
 make test
 make lint
+make docs
 ```
 
 ## Lines of Code
