@@ -6,6 +6,21 @@ public enum WikiAPIError: Error, Sendable, Equatable {
     case unreachable([WikiHostFailure])
 }
 
+extension WikiAPIError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case let .status(code):
+            "the server answered \(code)"
+        case let .malformed(what):
+            "the answer could not be read: \(what)"
+        case let .unreachable(failures) where failures.isEmpty:
+            "no host was tried"
+        case let .unreachable(failures):
+            "no host answered: " + failures.map(\.said).joined(separator: "; ")
+        }
+    }
+}
+
 public struct WikiAPI: Sendable {
     private let hosts: WikiHostPool
     private let transport: JSONTransport

@@ -14,6 +14,17 @@ public struct WikiHostFailure: Error, Sendable, Equatable {
         self.host = host
         self.reason = reason
     }
+
+    var said: String {
+        switch reason {
+        case let .network(code):
+            "\(host.absoluteString) is out of reach (URLError \(code))"
+        case let .http(status):
+            "\(host.absoluteString) answered \(status)"
+        case let .browser(what):
+            "\(host.absoluteString) sent the reader back with \(what)"
+        }
+    }
 }
 
 public actor WikiHostPool {
