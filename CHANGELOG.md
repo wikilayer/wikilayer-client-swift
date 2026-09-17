@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3
+
+- A request that was cancelled is no longer reported as a host that could not
+  be reached. A caller that stops a sync, or a screen that goes away while one
+  is running, gets the cancellation back as it was raised, and can tell it
+  apart from a server that is down.
+
 ## 0.1.2
 
 - Say what went wrong: `WikiAPIError` now describes itself, so a failure

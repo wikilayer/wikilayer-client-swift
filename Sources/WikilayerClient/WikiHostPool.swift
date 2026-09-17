@@ -75,6 +75,8 @@ func onAvailableHost<T: Sendable>(
             let result = try await operation(host)
             await pool.select(host)
             return result
+        } catch let error as URLError where error.code == .cancelled {
+            throw error
         } catch let error as URLError {
             failures.append(WikiHostFailure(host: host, reason: .network(error.code.rawValue)))
         } catch WikiAPIError.status(let status) {
@@ -96,6 +98,8 @@ func onSelectedHost<T: Sendable>(
     }
     do {
         return try await operation(host)
+    } catch let error as URLError where error.code == .cancelled {
+        throw error
     } catch let error as URLError {
         throw WikiAPIError.unreachable([
             WikiHostFailure(host: host, reason: .network(error.code.rawValue))
