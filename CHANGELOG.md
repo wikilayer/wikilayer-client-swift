@@ -8,12 +8,16 @@
 
 ## 0.1.1
 
-- Move the primary host and mirror list into the library-owned `hosts.yaml`.
-- Provide `WikiHostConfiguration.bundled` for applications.
+- The server to talk to, and the mirrors to fall back on, now ship with the
+  library in `hosts.yaml` rather than being written into each application.
+  `WikiHostConfiguration.bundled` hands them over; an application that named
+  its own host keeps working by passing it to `WikiHostPool` as before.
 
 ## 0.1.0
 
-- Extract the Wikilayer API requests, response structures and live change
-  channel from the iOS application.
-- Allow a client to try an ordered set of hosts after network failures and
-  report when none can be reached.
+- First release: the requests, the response types and the subscription that
+  streams a wiki's changes as they happen, taken out of the iOS reader so
+  anything else can use them too.
+- A request may be given several servers in order, and moves to the next when
+  one cannot be reached. When none answers, the failure names every one that
+  was tried.
