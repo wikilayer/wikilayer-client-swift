@@ -143,6 +143,22 @@ struct AuthAPITests {
         #expect(sent.contains("Ada, Countess of Lovelace"))
     }
 
+    @Test("closing an account sends the optional reason with the credential")
+    func deleteAccount() async throws {
+        let (api, stub) = stubbedAuth()
+        stub.answers("", status: 204)
+
+        try await api.deleteAccount(reason: "No longer needed", as: Credential(token: "ours"))
+
+        let asked = try #require(stub.lastAsked)
+        #expect(asked.url?.absoluteString.hasSuffix("/api/me") == true)
+        #expect(asked.method == "DELETE")
+        #expect(asked.headers["Authorization"] == "Bearer ours")
+        #expect(asked.headers["Content-Type"] == "application/json")
+        let sent = try #require(asked.body)
+        #expect(sent.contains("No longer needed"))
+    }
+
     @Test("signing out is a call, not just forgetting: a copy off the device must stop working")
     func signOut() async throws {
         let (api, stub) = stubbedAuth()

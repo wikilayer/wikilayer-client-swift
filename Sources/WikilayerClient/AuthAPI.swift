@@ -139,6 +139,16 @@ public struct AuthAPI: Sendable {
         }
     }
 
+    /// Permanently closes the account represented by a credential.
+    public func deleteAccount(reason: String, as credential: Credential) async throws {
+        _ = try await onSelectedHost(in: hosts) { host in
+            var request = signed(host: host, path: "api/me", method: "DELETE", by: credential)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONEncoder().encode(["reason": reason])
+            return try await transport.data(from: request)
+        }
+    }
+
     /// Revokes a credential on its selected host.
     public func signOut(_ credential: Credential) async throws {
         _ = try await onSelectedHost(in: hosts) { host in
