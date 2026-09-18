@@ -1,30 +1,41 @@
 # Changelog
 
+## 0.1.4
+
+### Changed
+
+- Expanded the API reference with the contracts for synchronisation, live
+  changes, authentication, host selection, failures and wire models. No API
+  changes are required when updating.
+
 ## 0.1.3
 
-- A request that was cancelled is no longer reported as a host that could not
-  be reached. A caller that stops a sync, or a screen that goes away while one
-  is running, gets the cancellation back as it was raised, and can tell it
-  apart from a server that is down.
+### Fixed
+
+- Cancellation is returned to the caller instead of being reported as an
+  unreachable host.
 
 ## 0.1.2
 
-- Say what went wrong: `WikiAPIError` now describes itself, so a failure
-  reaches a log or a reader as the host that did not answer and the reason it
-  gave, rather than as "the operation couldn't be completed (error 2)".
+### Changed
+
+- `WikiAPIError` now provides a readable description containing the failed host
+  and its reason instead of a generic system error.
 
 ## 0.1.1
 
+### Changed
+
 - The server to talk to, and the mirrors to fall back on, now ship with the
   library in `hosts.yaml` rather than being written into each application.
-  `WikiHostConfiguration.bundled` hands them over; an application that named
-  its own host keeps working by passing it to `WikiHostPool` as before.
+  Existing callers can continue to create `WikiHostPool` with an explicit host.
 
 ## 0.1.0
 
-- First release: the requests, the response types and the subscription that
-  streams a wiki's changes as they happen, taken out of the iOS reader so
-  anything else can use them too.
-- A request may be given several servers in order, and moves to the next when
-  one cannot be reached. When none answers, the failure names every one that
-  was tried.
+### Added
+
+- Requests and response models for the public directory, address resolution,
+  synchronisation and authentication.
+- A live change channel for wikis.
+- Ordered hosts with automatic failover for safe requests and a typed failure
+  for every host attempted.

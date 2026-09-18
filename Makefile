@@ -1,11 +1,23 @@
+COMMENTCENSOR_VERSION ?= v0.3.1
+COMMENTCENSOR_ENV = .build/commentcensor
+COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
+
 .DEFAULT_GOAL := build
 
-.PHONY: format lint test-build test docs build install
+.PHONY: install-tools format comments lint test-build test docs build install
+
+install-tools:
+	brew install swiftlint
+	python3 -m venv $(COMMENTCENSOR_ENV)
+	$(COMMENTCENSOR_ENV)/bin/pip install --quiet --upgrade git+https://github.com/botforge-pro/commentcensor.git@$(COMMENTCENSOR_VERSION)
 
 format:
 	swiftlint --fix
 
-lint:
+comments:
+	$(COMMENTCENSOR) .
+
+lint: comments
 	swiftlint --strict
 
 test-build:
@@ -21,7 +33,8 @@ docs:
 		--transform-for-static-hosting \
 		--hosting-base-path wikilayer-client-swift
 
-build: lint test
+build: lint test-build test docs
+	swift build
 
 install:
-	brew install swiftlint
+	$(MAKE) install-tools

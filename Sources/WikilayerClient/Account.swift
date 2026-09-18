@@ -1,5 +1,6 @@
 import Foundation
 
+/// The account returned for the current credential.
 public struct Account: Codable, Sendable, Identifiable, Equatable {
     public let id: Int64
     public let displayName: String
@@ -48,6 +49,7 @@ public struct Account: Codable, Sendable, Identifiable, Equatable {
     }
 }
 
+/// A bearer token accepted by authenticated Wikilayer requests.
 public struct Credential: Codable, Sendable, Equatable {
     public let token: String
 

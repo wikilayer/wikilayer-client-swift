@@ -1,10 +1,12 @@
 import Foundation
 
+/// A provider that issues a native identity token.
 public enum NativeProvider: String, Sendable, CaseIterable {
     case apple
     case google
 }
 
+/// The public parameters that identify an OAuth client.
 public struct OAuthClient: Sendable, Equatable {
     public let id: String
     public let redirectURI: String
@@ -17,11 +19,13 @@ public struct OAuthClient: Sendable, Equatable {
     }
 }
 
+/// A browser authorization URL bound to the host that issued it.
 public struct AuthorizationRequest: Sendable, Equatable {
     public let url: URL
     let host: URL
 }
 
+/// Authentication and account operations for a shared host pool.
 public struct AuthAPI: Sendable {
     private let hosts: WikiHostPool
     private let transport: JSONTransport
@@ -33,6 +37,7 @@ public struct AuthAPI: Sendable {
         self.transport = JSONTransport(session: session)
     }
 
+    /// Exchanges a native provider token once on the selected host.
     public func signIn(
         with provider: NativeProvider,
         identityToken: String,
@@ -59,6 +64,7 @@ public struct AuthAPI: Sendable {
         }
     }
 
+    /// Creates a browser authorization request on the selected host.
     public func authorizationRequest(
         provider: String,
         state: String,
@@ -87,6 +93,7 @@ public struct AuthAPI: Sendable {
         ])
     }
 
+    /// Exchanges an OAuth code on the host that issued the authorization request.
     public func exchange(
         code: String,
         verifier: String,
@@ -112,6 +119,7 @@ public struct AuthAPI: Sendable {
         }
     }
 
+    /// Returns the account represented by a credential.
     public func account(as credential: Credential) async throws -> Account {
         try await onAvailableHost(in: hosts) { host in
             try await transport.value(
@@ -121,6 +129,7 @@ public struct AuthAPI: Sendable {
         }
     }
 
+    /// Changes the account display name and returns the updated account.
     public func rename(to name: String, as credential: Credential) async throws -> Account {
         try await onAvailableHost(in: hosts) { host in
             var request = signed(host: host, path: "api/me", method: "PATCH", by: credential)
@@ -130,6 +139,7 @@ public struct AuthAPI: Sendable {
         }
     }
 
+    /// Revokes a credential on its selected host.
     public func signOut(_ credential: Credential) async throws {
         _ = try await onSelectedHost(in: hosts) { host in
             try await transport.data(

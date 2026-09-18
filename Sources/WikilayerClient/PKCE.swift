@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 
+/// A verifier, challenge and state for one OAuth authorization flow.
 public struct PKCE: Sendable {
     public let verifier: String
     public let state: String

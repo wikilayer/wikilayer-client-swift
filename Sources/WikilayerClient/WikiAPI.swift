@@ -1,5 +1,6 @@
 import Foundation
 
+/// A server refusal, unreadable response or exhaustion of the configured hosts.
 public enum WikiAPIError: Error, Sendable, Equatable {
     case status(Int)
     case malformed(String)
@@ -21,6 +22,7 @@ extension WikiAPIError: LocalizedError {
     }
 }
 
+/// Reads directory entries, resolves addresses and synchronizes wiki nodes.
 public struct WikiAPI: Sendable {
     private let hosts: WikiHostPool
     private let transport: JSONTransport
@@ -53,6 +55,7 @@ public struct WikiAPI: Sendable {
         )
     }
 
+    /// Fetches one page of changes after a cursor with an explicit page size.
     public func sync(
         wikiID: Int64,
         after cursor: String?,
@@ -70,6 +73,7 @@ public struct WikiAPI: Sendable {
         }
     }
 
+    /// Fetches one page of changes using the configured synchronization page size.
     public func sync(
         wikiID: Int64,
         after cursor: String?,
@@ -90,6 +94,7 @@ public struct WikiAPI: Sendable {
         return request
     }
 
+    /// Searches the public directory with an explicit page size and offset.
     public func wikis(
         matching query: String,
         limit: Int,
@@ -110,10 +115,12 @@ public struct WikiAPI: Sendable {
         }
     }
 
+    /// Searches the public directory using the configured directory page size.
     public func wikis(matching query: String = "", offset: Int = 0) async throws -> WikiPage {
         try await wikis(matching: query, limit: directoryPageSize, offset: offset)
     }
 
+    /// Fetches one cursor-based page of the authenticated account's wikis.
     public func myWikis(
         after cursor: String?,
         as credential: Credential,
@@ -131,10 +138,12 @@ public struct WikiAPI: Sendable {
         }
     }
 
+    /// Fetches account wikis using the configured synchronization page size.
     public func myWikis(after cursor: String?, as credential: Credential) async throws -> MyWikiPage {
         try await myWikis(after: cursor, as: credential, limit: syncPageSize)
     }
 
+    /// Resolves a public or accessible Wikilayer URL to its wiki and node identifiers.
     public func resolve(_ address: URL, as credential: Credential? = nil) async throws -> ResolvedAddress {
         try await onAvailableHost(in: hosts) { host in
             let items = [URLQueryItem(name: "url", value: address.absoluteString)]

@@ -1,10 +1,12 @@
 import Foundation
 
+/// The visibility reported for a wiki owned by the current account.
 public enum WikiVisibility: String, Codable, Sendable {
     case `public`
     case `private`
 }
 
+/// One wiki in the authenticated account's cursor-based listing.
 public struct MyWiki: Decodable, Sendable, Equatable {
     public let id: Int64
     public let title: String
@@ -55,6 +57,7 @@ public struct MyWiki: Decodable, Sendable, Equatable {
     }
 }
 
+/// A page of wikis belonging to the authenticated account.
 public struct MyWikiPage: Decodable, Sendable {
     public let wikis: [MyWiki]
     public let hasMore: Bool

@@ -25,6 +25,8 @@ statuses. One-use authentication operations are never retried. See
 
 ### Reading Wikilayer
 
+- <doc:Synchronizing-Wikis>
+- <doc:Live-Changes>
 - ``WikiAPI``
 - ``WikiChannel``
 - ``WikiListening``

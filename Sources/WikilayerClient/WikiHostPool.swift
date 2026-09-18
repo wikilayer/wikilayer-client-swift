@@ -1,6 +1,8 @@
 import Foundation
 
+/// The host and typed reason recorded for one failed attempt.
 public struct WikiHostFailure: Error, Sendable, Equatable {
+    /// A retryable network, HTTP or browser failure.
     public enum Reason: Sendable, Equatable {
         case network(Int)
         case http(Int)
@@ -27,6 +29,7 @@ public struct WikiHostFailure: Error, Sendable, Equatable {
     }
 }
 
+/// An ordered set of hosts that remembers the last successful selection.
 public actor WikiHostPool {
     private let hosts: [URL]
     private let failoverHTTPStatuses: Set<Int>

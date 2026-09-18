@@ -14,5 +14,5 @@ changes. If every candidate fails, ``WikiAPIError/unreachable(_:)`` carries a
 unreachable service from an ordinary server refusal and decide whether to suggest
 a VPN.
 
-Wikilayer currently has no mirror, so the bundled list is empty. A later library
-release can add one without changing an application configuration.
+Wikilayer currently has no mirror, so the bundled mirrors list is empty. A later
+library release can add one without changing an application configuration.

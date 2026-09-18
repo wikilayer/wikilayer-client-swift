@@ -1,11 +1,13 @@
 import Foundation
 
+/// The structural role of a synchronized node.
 public enum NodeKind: String, Codable, Sendable {
     case wiki
     case page
     case block
 }
 
+/// The complete synchronized representation of one wiki node.
 public struct SyncNode: Codable, Sendable, Equatable {
     public let id: Int64
     public let path: String
@@ -79,6 +81,7 @@ public struct SyncNode: Codable, Sendable, Equatable {
     public var depth: Int { nodePath.depth }
 }
 
+/// An ordered page of synchronized nodes and the cursor that follows it.
 public struct SyncBatch: Decodable, Sendable {
     public let nodes: [SyncNode]
     public let hasMore: Bool

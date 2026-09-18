@@ -1,5 +1,6 @@
 import Foundation
 
+/// A dot-separated ancestry path returned with a synchronized node.
 public struct NodePath: Equatable, Sendable {
     public static let none = Int64(0)
 
@@ -29,10 +30,12 @@ public struct NodePath: Equatable, Sendable {
         max(labels.count - 1, 0)
     }
 
+    /// Returns whether the path has the given node among its ancestors.
     public func descends(from ancestor: Int64) -> Bool {
         labels.dropLast().contains("\(ancestor)")
     }
 
+    /// Returns whether this path is the other path or one of its descendants.
     public func sitsInside(_ other: NodePath) -> Bool {
         text == other.text || text.hasPrefix("\(other.text).")
     }

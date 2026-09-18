@@ -1,5 +1,6 @@
 import Foundation
 
+/// A source of signals that a wiki may have changed.
 public protocol WikiListening: Sendable {
     func changes(
         inWiki wikiID: Int64,
@@ -7,6 +8,7 @@ public protocol WikiListening: Sendable {
     ) -> AsyncStream<Void>
 }
 
+/// A reconnecting server-sent-event channel for wiki change signals.
 public struct WikiChannel: WikiListening, Sendable {
     private static let silenceIsNotAFailedRequest = TimeInterval.greatestFiniteMagnitude
 
@@ -47,6 +49,7 @@ public struct WikiChannel: WikiListening, Sendable {
         )
     }
 
+    /// Returns a stream that yields when the wiki may have new synchronized data.
     public func changes(
         inWiki wikiID: Int64,
         as credential: @escaping @Sendable () async -> Credential? = { nil }

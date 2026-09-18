@@ -1,5 +1,6 @@
 import Foundation
 
+/// One entry in the public wiki directory.
 public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
     public let id: Int64
     public let title: String
@@ -21,6 +22,7 @@ public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
     }
 }
 
+/// The wiki and node identified by a Wikilayer URL.
 public struct ResolvedAddress: Codable, Sendable, Equatable {
     public let wikiID: Int64
     public let nodeID: Int64
@@ -60,6 +62,7 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
     }
 }
 
+/// An offset-based page of public directory entries.
 public struct WikiPage: Codable, Sendable {
     public let wikis: [WikiSummary]
     public let hasMore: Bool

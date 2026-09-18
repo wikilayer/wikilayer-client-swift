@@ -1,0 +1,14 @@
+documentation: https://wikilayer.github.io/wikilayer-client-swift/data/documentation/wikilayerclient.json
+
+allow:
+  - file: Sources/WikilayerClient/AskedQuery.swift
+    text: |-
+      // URLComponents leaves a bare `+` in a query value, and a server that reads the query the way a
+      // form is read takes it for a space: Go's `url.ParseQuery`, which our API runs on, turns `C++`
+      // into `C  `. Encoding it here is the only place that has to know.
+    what_was_tried_and_why_none_of_it_worked:
+      "The standard URLComponents API owns the encoded query but preserves a plus sign,
+       while the server follows form decoding and therefore reads it as a space. A helper
+       name can say that the query is encoded but cannot preserve which Foundation and Go
+       behaviours make the extra replacement necessary. The regression test holds the
+       result but not the external contracts that explain why the replacement must remain."
