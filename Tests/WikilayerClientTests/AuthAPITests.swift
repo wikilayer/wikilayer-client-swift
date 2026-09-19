@@ -159,6 +159,16 @@ struct AuthAPITests {
         #expect(sent.contains("No longer needed"))
     }
 
+    @Test("a live wiki is an account deletion refusal, not a status for the app to interpret")
+    func deleteAccountWithLiveWikis() async {
+        let (api, stub) = stubbedAuth()
+        stub.answers(#"{"error":"live_wikis"}"#, status: 409)
+
+        await #expect(throws: AccountDeletionError.liveWikis) {
+            try await api.deleteAccount(reason: "", as: Credential(token: "ours"))
+        }
+    }
+
     @Test("signing out is a call, not just forgetting: a copy off the device must stop working")
     func signOut() async throws {
         let (api, stub) = stubbedAuth()

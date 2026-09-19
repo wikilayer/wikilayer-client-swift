@@ -25,6 +25,10 @@ public struct AuthorizationRequest: Sendable, Equatable {
     let host: URL
 }
 
+public enum AccountDeletionError: Error, Equatable, Sendable {
+    case liveWikis
+}
+
 /// Authentication and account operations for a shared host pool.
 public struct AuthAPI: Sendable {
     private let hosts: WikiHostPool
@@ -141,11 +145,15 @@ public struct AuthAPI: Sendable {
 
     /// Permanently closes the account represented by a credential.
     public func deleteAccount(reason: String, as credential: Credential) async throws {
-        _ = try await onSelectedHost(in: hosts) { host in
-            var request = signed(host: host, path: "api/me", method: "DELETE", by: credential)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONEncoder().encode(["reason": reason])
-            return try await transport.data(from: request)
+        do {
+            _ = try await onSelectedHost(in: hosts) { host in
+                var request = signed(host: host, path: "api/me", method: "DELETE", by: credential)
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try JSONEncoder().encode(["reason": reason])
+                return try await transport.data(from: request)
+            }
+        } catch WikiAPIError.status(409) {
+            throw AccountDeletionError.liveWikis
         }
     }
 
