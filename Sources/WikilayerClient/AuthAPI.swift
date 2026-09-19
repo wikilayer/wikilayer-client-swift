@@ -84,17 +84,25 @@ public struct AuthAPI: Sendable {
         }
     }
 
-    private func authorizationURL(at host: URL, provider: String, state: String, challenge: String) -> URL? {
-        AskedQuery.url(host.appending(path: "oauth/authorize"), [
-            URLQueryItem(name: "client_id", value: client.id),
-            URLQueryItem(name: "redirect_uri", value: client.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: client.scope),
-            URLQueryItem(name: "provider", value: provider),
-            URLQueryItem(name: "state", value: state),
-            URLQueryItem(name: "code_challenge", value: challenge),
-            URLQueryItem(name: "code_challenge_method", value: "S256")
-        ])
+    private func authorizationURL(
+        at host: URL,
+        provider: String,
+        state: String,
+        challenge: String
+    ) -> URL? {
+        AskedQuery.url(
+            host.appending(path: "oauth/authorize"),
+            [
+                URLQueryItem(name: "client_id", value: client.id),
+                URLQueryItem(name: "redirect_uri", value: client.redirectURI),
+                URLQueryItem(name: "response_type", value: "code"),
+                URLQueryItem(name: "scope", value: client.scope),
+                URLQueryItem(name: "provider", value: provider),
+                URLQueryItem(name: "state", value: state),
+                URLQueryItem(name: "code_challenge", value: challenge),
+                URLQueryItem(name: "code_challenge_method", value: "S256")
+            ]
+        )
     }
 
     /// Exchanges an OAuth code on the host that issued the authorization request.
@@ -107,14 +115,19 @@ public struct AuthAPI: Sendable {
         do {
             var request = URLRequest(url: host.appending(path: "oauth/token"))
             request.httpMethod = "POST"
-            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            request.httpBody = Data(form([
-                "grant_type": "authorization_code",
-                "code": code,
-                "code_verifier": verifier,
-                "client_id": client.id,
-                "redirect_uri": client.redirectURI
-            ]).utf8)
+            request.setValue(
+                "application/x-www-form-urlencoded",
+                forHTTPHeaderField: "Content-Type"
+            )
+            request.httpBody = Data(
+                form([
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "code_verifier": verifier,
+                    "client_id": client.id,
+                    "redirect_uri": client.redirectURI
+                ]).utf8
+            )
             return try await transport.value(TokenGrant.self, from: request).credential()
         } catch let error as URLError {
             throw WikiAPIError.unreachable([
@@ -166,7 +179,12 @@ public struct AuthAPI: Sendable {
         }
     }
 
-    private func signed(host: URL, path: String, method: String, by credential: Credential) -> URLRequest {
+    private func signed(
+        host: URL,
+        path: String,
+        method: String,
+        by credential: Credential
+    ) -> URLRequest {
         var request = URLRequest(url: host.appending(path: path))
         request.httpMethod = method
         request.setValue("Bearer " + credential.token, forHTTPHeaderField: "Authorization")

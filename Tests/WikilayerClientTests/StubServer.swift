@@ -58,12 +58,12 @@ final class StubServer: URLProtocol, @unchecked Sendable {
             return Self.slots[name]
         }
         guard let slot, let url = request.url,
-              let response = HTTPURLResponse(
-                  url: url,
-                  statusCode: slot.status,
-                  httpVersion: nil,
-                  headerFields: ["Content-Type": "application/json"]
-              )
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: slot.status,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )
         else {
             client?.urlProtocol(self, didFailWithError: URLError(.badURL))
             return

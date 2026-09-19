@@ -27,18 +27,19 @@ private final class HostProtocol: URLProtocol, @unchecked Sendable {
         }
         let status = host == "censored.example" ? 451 : 200
         guard let url = request.url,
-              let response = HTTPURLResponse(
-                  url: url,
-                  statusCode: status,
-                  httpVersion: nil,
-                  headerFields: ["Content-Type": "application/json"]
-              )
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: status,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )
         else {
             client?.urlProtocol(self, didFailWithError: URLError(.badURL))
             return
         }
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        let body = request.url?.path.hasSuffix("/api/auth/apple") == true
+        let body =
+            request.url?.path.hasSuffix("/api/auth/apple") == true
             ? #"{"access_token":"ours","expires_in":3600}"#
             : #"{"wikis":[],"has_more":false}"#
         client?.urlProtocol(self, didLoad: Data(body.utf8))
@@ -84,9 +85,14 @@ struct WikiHostPoolTests {
             _ = try await api.wikis()
             Issue.record("an unreachable host answered")
         } catch WikiAPIError.unreachable(let failures) {
-            #expect(failures == [
-                WikiHostFailure(host: blocked, reason: .network(URLError.Code.timedOut.rawValue))
-            ])
+            #expect(
+                failures == [
+                    WikiHostFailure(
+                        host: blocked,
+                        reason: .network(URLError.Code.timedOut.rawValue)
+                    )
+                ]
+            )
         } catch {
             Issue.record("the wrong error came back: \(error)")
         }

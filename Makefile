@@ -1,4 +1,4 @@
-COMMENTCENSOR_VERSION ?= v0.3.1
+COMMENTCENSOR_VERSION ?= v0.3.2
 COMMENTCENSOR_ENV = .build/commentcensor
 COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 
@@ -7,18 +7,19 @@ COMMENTCENSOR = $(COMMENTCENSOR_ENV)/bin/commentcensor
 .PHONY: install-tools format comments lint test-build test docs build install
 
 install-tools:
-	brew install swiftlint
+	brew install swiftlint swift-format
 	python3 -m venv $(COMMENTCENSOR_ENV)
 	$(COMMENTCENSOR_ENV)/bin/pip install --quiet --upgrade git+https://github.com/botforge-pro/commentcensor.git@$(COMMENTCENSOR_VERSION)
 
 format:
-	swiftlint --fix
+	swift-format format --in-place --recursive Sources Tests Package.swift
 
 comments:
 	$(COMMENTCENSOR) .
 
 lint: comments
 	swiftlint --strict
+	swift-format lint --strict --recursive Sources Tests Package.swift
 
 test-build:
 	swift build --build-tests

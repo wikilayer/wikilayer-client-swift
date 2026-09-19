@@ -1,11 +1,11 @@
 import Foundation
 
-// URLComponents leaves a bare `+` in a query value, and a server that reads the query the way a
-// form is read takes it for a space: Go's `url.ParseQuery`, which our API runs on, turns `C++`
-// into `C  `. Encoding it here is the only place that has to know.
+// URLComponents preserves `+`, while Go form decoding reads it as a space.
 enum AskedQuery {
     static func url(_ address: URL, _ items: [URLQueryItem]) -> URL? {
-        guard var asked = URLComponents(url: address, resolvingAgainstBaseURL: false) else { return nil }
+        guard var asked = URLComponents(url: address, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
         asked.queryItems = items
         let written = asked.percentEncodedQuery
         asked.percentEncodedQuery = encoded(written)

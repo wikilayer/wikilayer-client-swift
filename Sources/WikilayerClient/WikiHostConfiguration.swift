@@ -31,20 +31,23 @@ public struct WikiHostConfiguration: Sendable, Equatable {
 
     static func parse(_ yaml: String) throws -> Self {
         let meaningful = yaml.split(whereSeparator: \.isNewline).map {
-            $0.split(separator: "#", maxSplits: 1).first.map(String.init)?.trimmingCharacters(in: .whitespaces) ?? ""
+            $0.split(separator: "#", maxSplits: 1).first.map(String.init)?.trimmingCharacters(
+                in: .whitespaces
+            ) ?? ""
         }.filter { !$0.isEmpty }
         guard let primaryLine = meaningful.first(where: { $0.hasPrefix("primary:") }),
-              let primary = URL(string: value(after: ":", in: primaryLine)),
-              primary.scheme == "https"
+            let primary = URL(string: value(after: ":", in: primaryLine)),
+            primary.scheme == "https"
         else {
             throw WikiAPIError.malformed("hosts.yaml has no HTTPS primary host")
         }
         let mirrorStart = meaningful.firstIndex(where: { $0.hasPrefix("mirrors:") })
-        let mirrors = mirrorStart.map { start in
-            meaningful.dropFirst(start + 1).prefix(while: { $0.hasPrefix("-") }).compactMap {
-                URL(string: $0.dropFirst().trimmingCharacters(in: .whitespaces))
-            }
-        } ?? []
+        let mirrors =
+            mirrorStart.map { start in
+                meaningful.dropFirst(start + 1).prefix(while: { $0.hasPrefix("-") }).compactMap {
+                    URL(string: $0.dropFirst().trimmingCharacters(in: .whitespaces))
+                }
+            } ?? []
         return Self(primary: primary, mirrors: mirrors)
     }
 

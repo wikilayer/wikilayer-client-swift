@@ -36,7 +36,9 @@ public struct Account: Codable, Sendable, Identifiable, Equatable {
         displayName = try box.decodeIfPresent(String.self, forKey: .displayName) ?? ""
         email = try box.decodeIfPresent(String.self, forKey: .email) ?? ""
         avatarURL = try box.decodeIfPresent(URL.self, forKey: .avatarURL)
-        createdAt = try box.decodeIfPresent(String.self, forKey: .createdAt).map(WikiAPI.parseWireDate)
+        createdAt = try box.decodeIfPresent(String.self, forKey: .createdAt).map(
+            WikiAPI.parseWireDate
+        )
     }
 
     public func encode(to encoder: any Encoder) throws {

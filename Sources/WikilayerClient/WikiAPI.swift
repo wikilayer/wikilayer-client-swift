@@ -82,7 +82,12 @@ public struct WikiAPI: Sendable {
         try await sync(wikiID: wikiID, after: cursor, limit: syncPageSize, as: credential)
     }
 
-    private func syncURL(at host: URL, wikiID: Int64, after cursor: String?, limit: Int) throws -> URL {
+    private func syncURL(
+        at host: URL,
+        wikiID: Int64,
+        after cursor: String?,
+        limit: Int
+    ) throws -> URL {
         var items = [URLQueryItem(name: "limit", value: String(limit))]
         if let cursor {
             items.append(URLQueryItem(name: "cursor", value: cursor))
@@ -139,12 +144,16 @@ public struct WikiAPI: Sendable {
     }
 
     /// Fetches account wikis using the configured synchronization page size.
-    public func myWikis(after cursor: String?, as credential: Credential) async throws -> MyWikiPage {
+    public func myWikis(after cursor: String?, as credential: Credential) async throws -> MyWikiPage
+    {
         try await myWikis(after: cursor, as: credential, limit: syncPageSize)
     }
 
     /// Resolves a public or accessible Wikilayer URL to its wiki and node identifiers.
-    public func resolve(_ address: URL, as credential: Credential? = nil) async throws -> ResolvedAddress {
+    public func resolve(
+        _ address: URL,
+        as credential: Credential? = nil
+    ) async throws -> ResolvedAddress {
         try await onAvailableHost(in: hosts) { host in
             let items = [URLQueryItem(name: "url", value: address.absoluteString)]
             guard let request = AskedQuery.url(host.appending(path: "api/resolve"), items) else {
@@ -185,7 +194,9 @@ public struct WikiAPI: Sendable {
         let micros = Int64((date.timeIntervalSince1970 * 1_000_000).rounded())
         let wholeSeconds = Int64((Double(micros) / 1_000_000).rounded(.down))
         let fractionCutNotRounded = micros - wholeSeconds * 1_000_000
-        let head = Date(timeIntervalSince1970: Double(wholeSeconds)).formatted(wireDateOnAWholeSecond)
+        let head = Date(timeIntervalSince1970: Double(wholeSeconds)).formatted(
+            wireDateOnAWholeSecond
+        )
         return head.dropLast() + String(format: ".%06dZ", fractionCutNotRounded)
     }
 
@@ -201,7 +212,9 @@ public struct WikiAPI: Sendable {
         do {
             return try Date(text, strategy: wireDateOnAWholeSecond)
         } catch {
-            throw WikiAPIError.malformed("timestamp \(text) is in neither form: \(error.localizedDescription)")
+            throw WikiAPIError.malformed(
+                "timestamp \(text) is in neither form: \(error.localizedDescription)"
+            )
         }
     }
 }

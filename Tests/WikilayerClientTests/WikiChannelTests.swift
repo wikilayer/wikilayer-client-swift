@@ -12,12 +12,12 @@ final class EventStreamProtocol: URLProtocol, @unchecked Sendable {
 
     override func startLoading() {
         guard let url = request.url,
-              let response = HTTPURLResponse(
-                  url: url,
-                  statusCode: Self.status,
-                  httpVersion: nil,
-                  headerFields: ["Content-Type": "text/event-stream"]
-              )
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: Self.status,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream"]
+            )
         else {
             client?.urlProtocol(self, didFailWithError: URLError(.badURL))
             return

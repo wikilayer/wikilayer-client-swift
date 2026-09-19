@@ -41,6 +41,11 @@ opt_in_rules:
 analyzer_rules:
   - unused_import
 
+disabled_rules:
+  # swift-format puts the brace after a wrapped return type on the next line;
+  # SwiftLint's opening_brace rule requires the opposite layout.
+  - opening_brace
+
 identifier_name:
   excluded:
     - id

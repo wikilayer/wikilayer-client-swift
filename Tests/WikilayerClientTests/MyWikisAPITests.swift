@@ -19,16 +19,18 @@ struct MyWikisAPITests {
     @Test("a first ask carries the credential and no cursor, and reads the rows out of the answer")
     func firstAsk() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"wikis":[
-          {"id":2982,"title":"Guide","url_path":"https://wikilayer.org/smee/guide",
-           "updated_at":"2026-08-25T10:00:00.5Z","visibility":"public","mine":true,
-           "changed_at":"2026-08-25T10:00:00.5Z","removed":false},
-          {"id":1025,"title":"Codestyle","url_path":"https://wikilayer.org/smee/codestyle",
-           "updated_at":"2026-08-25T11:00:00Z","visibility":"private","mine":false,
-           "changed_at":"2026-08-25T11:00:00Z","removed":false}
-        ],"has_more":false}
-        """)
+        stub.answers(
+            """
+            {"wikis":[
+              {"id":2982,"title":"Guide","url_path":"https://wikilayer.org/smee/guide",
+               "updated_at":"2026-08-25T10:00:00.5Z","visibility":"public","mine":true,
+               "changed_at":"2026-08-25T10:00:00.5Z","removed":false},
+              {"id":1025,"title":"Codestyle","url_path":"https://wikilayer.org/smee/codestyle",
+               "updated_at":"2026-08-25T11:00:00Z","visibility":"private","mine":false,
+               "changed_at":"2026-08-25T11:00:00Z","removed":false}
+            ],"has_more":false}
+            """
+        )
 
         let page = try await api.myWikis(after: nil, as: credential)
 
@@ -49,9 +51,11 @@ struct MyWikisAPITests {
     @Test("a wiki that is no longer the reader's arrives with its id and nothing else")
     func removedRow() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"wikis":[{"id":1025,"changed_at":"2026-08-25T11:00:00Z","removed":true}],"has_more":false}
-        """)
+        stub.answers(
+            """
+            {"wikis":[{"id":1025,"changed_at":"2026-08-25T11:00:00Z","removed":true}],"has_more":false}
+            """
+        )
 
         let page = try await api.myWikis(after: nil, as: credential)
 
@@ -65,11 +69,13 @@ struct MyWikisAPITests {
     @Test("the cursor the server handed over goes back to it as it came")
     func cursorRoundTrip() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"wikis":[{"id":1025,"title":"Codestyle","url_path":"/x","updated_at":"2026-08-25T11:00:00.257843Z",
-          "visibility":"private","mine":true,"removed":false}],
-         "has_more":true,"next_cursor":"where-the-set-got-to"}
-        """)
+        stub.answers(
+            """
+            {"wikis":[{"id":1025,"title":"Codestyle","url_path":"/x","updated_at":"2026-08-25T11:00:00.257843Z",
+              "visibility":"private","mine":true,"removed":false}],
+             "has_more":true,"next_cursor":"where-the-set-got-to"}
+            """
+        )
 
         let page = try await api.myWikis(after: nil, as: credential)
         _ = try await api.myWikis(after: page.cursor, as: credential)

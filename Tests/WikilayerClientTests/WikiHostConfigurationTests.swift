@@ -12,12 +12,14 @@ struct WikiHostConfigurationTests {
 
     @Test("ordered mirrors are read from YAML")
     func mirrors() throws {
-        let hosts = try WikiHostConfiguration.parse("""
-        primary: https://wikilayer.org
-        mirrors:
-          - https://one.example
-          - https://two.example
-        """)
+        let hosts = try WikiHostConfiguration.parse(
+            """
+            primary: https://wikilayer.org
+            mirrors:
+              - https://one.example
+              - https://two.example
+            """
+        )
 
         #expect(hosts.mirrors.map(\.host) == ["one.example", "two.example"])
     }

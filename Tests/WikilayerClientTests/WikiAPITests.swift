@@ -17,14 +17,16 @@ struct WikiAPITests {
     @Test("a first sync asks for the whole wiki and reads nodes out of the answer")
     func firstSync() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"nodes":[
-          {"id":2982,"path":"2982","kind":"wiki","title":"Guide","language":"en",
-           "changed_at":"2026-08-25T10:00:00.5Z"},
-          {"id":4401,"path":"2982.4401","kind":"page","title":"Agent rules","sort_key":"10",
-           "changed_at":"2026-08-25T10:00:01Z"}
-        ],"has_more":true}
-        """)
+        stub.answers(
+            """
+            {"nodes":[
+              {"id":2982,"path":"2982","kind":"wiki","title":"Guide","language":"en",
+               "changed_at":"2026-08-25T10:00:00.5Z"},
+              {"id":4401,"path":"2982.4401","kind":"page","title":"Agent rules","sort_key":"10",
+               "changed_at":"2026-08-25T10:00:01Z"}
+            ],"has_more":true}
+            """
+        )
 
         let batch = try await api.sync(wikiID: 2982, after: nil)
 
@@ -42,12 +44,14 @@ struct WikiAPITests {
     @Test("the directory answers with wikis to follow, and says whether there are more")
     func directory() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"wikis":[
-          {"id":2982,"title":"Wikilayer authoring guide","url_path":"/smee-again/wikilayer-howto",
-           "updated_at":"2026-08-25T10:00:00.5Z"}
-        ],"has_more":true}
-        """)
+        stub.answers(
+            """
+            {"wikis":[
+              {"id":2982,"title":"Wikilayer authoring guide","url_path":"/smee-again/wikilayer-howto",
+               "updated_at":"2026-08-25T10:00:00.5Z"}
+            ],"has_more":true}
+            """
+        )
 
         let page = try await api.wikis(matching: "guide")
 
@@ -65,7 +69,9 @@ struct WikiAPITests {
     func resolvingALink() async throws {
         let (api, stub) = stubbedAPI()
         stub.answers(#"{"wiki_id":2982,"node_id":39340,"language":"en"}"#)
-        let link = try #require(URL(string: "https://wikilayer.org/smee-again/howto/4401#block-39340"))
+        let link = try #require(
+            URL(string: "https://wikilayer.org/smee-again/howto/4401#block-39340")
+        )
 
         let found = try await api.resolve(link)
 
@@ -75,7 +81,10 @@ struct WikiAPITests {
 
         let asked = try #require(stub.lastAsked?.url?.absoluteString)
         #expect(asked.contains("/api/resolve"))
-        #expect(asked.contains("block-39340"), "the anchor is part of the address and has to travel")
+        #expect(
+            asked.contains("block-39340"),
+            "the anchor is part of the address and has to travel"
+        )
     }
 
     @Test("an empty query asks for the directory whole, without an empty filter")
@@ -135,11 +144,13 @@ struct WikiAPITests {
     @Test("the cursor the server handed over goes back to it as it came")
     func cursorRoundTrip() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"nodes":[{"id":39340,"path":"2982.39339.39340","kind":"block","title":"Rules",
-                   "changed_at":"2026-08-25T10:00:02.25Z"}],
-         "has_more":false,"next_cursor":"MTc3ODI1Mzc4NTMzMzkxOTAwMC4zMDA3"}
-        """)
+        stub.answers(
+            """
+            {"nodes":[{"id":39340,"path":"2982.39339.39340","kind":"block","title":"Rules",
+                       "changed_at":"2026-08-25T10:00:02.25Z"}],
+             "has_more":false,"next_cursor":"MTc3ODI1Mzc4NTMzMzkxOTAwMC4zMDA3"}
+            """
+        )
         let first = try await api.sync(wikiID: 2982, after: nil)
         let cursor = try #require(first.cursor)
 
@@ -147,7 +158,9 @@ struct WikiAPITests {
         _ = try await api.sync(wikiID: 2982, after: cursor)
 
         let asked = try #require(stub.lastAsked?.url)
-        let items = try #require(URLComponents(url: asked, resolvingAgainstBaseURL: false)?.queryItems)
+        let items = try #require(
+            URLComponents(url: asked, resolvingAgainstBaseURL: false)?.queryItems
+        )
         #expect(items.first { $0.name == "cursor" }?.value == "MTc3ODI1Mzc4NTMzMzkxOTAwMC4zMDA3")
     }
 
@@ -164,9 +177,11 @@ struct WikiAPITests {
     @Test("a deleted node arrives as an id and a flag, with no fields to speak of")
     func deletion() async throws {
         let (api, stub) = stubbedAPI()
-        stub.answers("""
-        {"nodes":[{"id":4036,"changed_at":"2026-08-25T11:00:00Z","deleted":true}],"has_more":false}
-        """)
+        stub.answers(
+            """
+            {"nodes":[{"id":4036,"changed_at":"2026-08-25T11:00:00Z","deleted":true}],"has_more":false}
+            """
+        )
 
         let batch = try await api.sync(wikiID: 2982, after: nil)
         let gone = try #require(batch.nodes.first)

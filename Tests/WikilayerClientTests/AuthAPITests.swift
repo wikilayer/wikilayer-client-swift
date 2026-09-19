@@ -7,7 +7,9 @@ import Testing
 private func stubbedAuth() -> (AuthAPI, StubbedSession) {
     let stub = StubServer.open()
     let api = AuthAPI(
-        hosts: WikiHostPool(primary: URL(string: "https://wikilayer.org") ?? URL.temporaryDirectory),
+        hosts: WikiHostPool(
+            primary: URL(string: "https://wikilayer.org") ?? URL.temporaryDirectory
+        ),
         client: OAuthClient(
             id: "wikilayer-app",
             redirectURI: "org.wikilayer:/oauth/callback",
@@ -23,9 +25,11 @@ struct AuthAPITests {
     @Test("the identity token the phone produced is traded for one of ours")
     func nativeSignIn() async throws {
         let (api, stub) = stubbedAuth()
-        stub.answers("""
-        {"access_token":"ours","token_type":"Bearer","expires_in":7776000,"scope":"app"}
-        """)
+        stub.answers(
+            """
+            {"access_token":"ours","token_type":"Bearer","expires_in":7776000,"scope":"app"}
+            """
+        )
 
         let credential = try await api.signIn(
             with: .apple,
@@ -57,14 +61,18 @@ struct AuthAPITests {
         let secret = PKCE()
         let (api, _) = stubbedAuth()
 
-        let request = try #require(await api.authorizationRequest(
-            provider: "github",
-            state: secret.state,
-            challenge: secret.challenge
-        ))
+        let request = try #require(
+            await api.authorizationRequest(
+                provider: "github",
+                state: secret.state,
+                challenge: secret.challenge
+            )
+        )
         let start = request.url
 
-        let asked = try #require(URLComponents(url: start, resolvingAgainstBaseURL: false)?.queryItems)
+        let asked = try #require(
+            URLComponents(url: start, resolvingAgainstBaseURL: false)?.queryItems
+        )
         func value(_ name: String) -> String? { asked.first { $0.name == name }?.value }
         #expect(start.path == "/oauth/authorize")
         #expect(value("client_id") == api.client.id)
@@ -85,11 +93,13 @@ struct AuthAPITests {
         let (api, stub) = stubbedAuth()
         stub.answers(#"{"access_token":"ours","expires_in":3600}"#)
 
-        let request = try #require(await api.authorizationRequest(
-            provider: "github",
-            state: "state",
-            challenge: "challenge"
-        ))
+        let request = try #require(
+            await api.authorizationRequest(
+                provider: "github",
+                state: "state",
+                challenge: "challenge"
+            )
+        )
         _ = try await api.exchange(code: "code+with/reserved=", verifier: "verifier", for: request)
 
         let asked = try #require(stub.lastAsked)
@@ -111,9 +121,11 @@ struct AuthAPITests {
     @Test("who is signed in is asked for with the credential, and nothing else")
     func account() async throws {
         let (api, stub) = stubbedAuth()
-        stub.answers("""
-        {"id":7,"display_name":"Ada Lovelace","email":"ada@example.org"}
-        """)
+        stub.answers(
+            """
+            {"id":7,"display_name":"Ada Lovelace","email":"ada@example.org"}
+            """
+        )
         let credential = Credential(token: "ours")
 
         let who = try await api.account(as: credential)
@@ -128,16 +140,24 @@ struct AuthAPITests {
     @Test("a new name is sent under the credential, and the account comes back wearing it")
     func rename() async throws {
         let (api, stub) = stubbedAuth()
-        stub.answers("""
-        {"id":7,"display_name":"Ada, Countess of Lovelace","email":"ada@example.org"}
-        """)
+        stub.answers(
+            """
+            {"id":7,"display_name":"Ada, Countess of Lovelace","email":"ada@example.org"}
+            """
+        )
 
-        let renamed = try await api.rename(to: "Ada, Countess of Lovelace", as: Credential(token: "ours"))
+        let renamed = try await api.rename(
+            to: "Ada, Countess of Lovelace",
+            as: Credential(token: "ours")
+        )
 
         #expect(renamed.displayName == "Ada, Countess of Lovelace")
         let asked = try #require(stub.lastAsked)
         #expect(asked.url?.absoluteString.hasSuffix("/api/me") == true)
-        #expect(asked.method == "PATCH", "an account replaced instead of patched loses everything not sent")
+        #expect(
+            asked.method == "PATCH",
+            "an account replaced instead of patched loses everything not sent"
+        )
         #expect(asked.headers["Authorization"] == "Bearer ours")
         let sent = try #require(asked.body)
         #expect(sent.contains("Ada, Countess of Lovelace"))
@@ -195,7 +215,10 @@ struct PKCETests {
             .replacingOccurrences(of: "=", with: "")
 
         #expect(secret.challenge == expected)
-        #expect(!secret.challenge.contains("="), "padding is not part of the base64url the server compares")
+        #expect(
+            !secret.challenge.contains("="),
+            "padding is not part of the base64url the server compares"
+        )
     }
 
     @Test("no two sign-ins share a secret")
