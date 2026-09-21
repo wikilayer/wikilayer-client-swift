@@ -11,8 +11,6 @@ public struct MyWiki: Decodable, Sendable, Equatable {
     public let id: Int64
     public let title: String
     public let urlPath: String
-    public let iconURL: URL?
-    public let pagesTree: Bool
     public let updatedAt: Date?
     public let visibility: WikiVisibility?
     public let mine: Bool
@@ -23,8 +21,6 @@ public struct MyWiki: Decodable, Sendable, Equatable {
         case id
         case title
         case urlPath = "url_path"
-        case iconURL = "icon_url"
-        case pagesTree = "pages_tree"
         case updatedAt = "updated_at"
         case visibility
         case mine
@@ -35,8 +31,6 @@ public struct MyWiki: Decodable, Sendable, Equatable {
         id: Int64,
         title: String = "",
         urlPath: String = "",
-        iconURL: URL? = nil,
-        pagesTree: Bool = false,
         updatedAt: Date? = nil,
         visibility: WikiVisibility? = nil,
         mine: Bool = false,
@@ -45,8 +39,6 @@ public struct MyWiki: Decodable, Sendable, Equatable {
         self.id = id
         self.title = title
         self.urlPath = urlPath
-        self.iconURL = iconURL
-        self.pagesTree = pagesTree
         self.updatedAt = updatedAt
         self.visibility = visibility
         self.mine = mine
@@ -58,8 +50,6 @@ public struct MyWiki: Decodable, Sendable, Equatable {
         id = try box.decode(Int64.self, forKey: .id)
         title = try box.decodeIfPresent(String.self, forKey: .title) ?? ""
         urlPath = try box.decodeIfPresent(String.self, forKey: .urlPath) ?? ""
-        iconURL = try box.decodeIfPresent(URL.self, forKey: .iconURL)
-        pagesTree = try box.decodeIfPresent(Bool.self, forKey: .pagesTree) ?? false
         updatedAt = try box.decodeIfPresent(Date.self, forKey: .updatedAt)
         visibility = try box.decodeIfPresent(WikiVisibility.self, forKey: .visibility)
         mine = try box.decodeIfPresent(Bool.self, forKey: .mine) ?? false

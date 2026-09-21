@@ -12,6 +12,10 @@ same identifier. Other nodes replace the locally stored representation. Empty
 wire fields are decoded as empty strings or zero values where the model declares
 those defaults.
 
+The wiki's own node carries what the wiki looks like: ``SyncNode/iconURL`` and
+``SyncNode/pagesTree``. A reader who follows a wiki rather than owning it is
+listed it nowhere, so this is the answer that reaches every wiki held.
+
 ``SyncNode/pageID`` names the page a node belongs to: a page answers with itself,
 and a block with its nearest page ancestor. A page's document is the nodes
 carrying its identifier, which is what stops that document at a page nested

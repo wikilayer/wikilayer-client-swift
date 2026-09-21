@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+### Changed
+
+- What a wiki looks like now travels on the wiki's own node in a sync:
+  `SyncNode.iconURL` and `SyncNode.pagesTree`. A reader who follows a wiki
+  rather than owning it is listed it nowhere, so the account's listing could
+  never tell them, and it no longer pretends to: `MyWiki` has lost `iconURL`
+  and `pagesTree`.
+- `WikiSummary` and `ResolvedAddress` keep the icon and lose `pagesTree`: both
+  answer about a wiki the reader does not hold yet, which is the only moment
+  before its own node can speak.
+
+### Requires
+
+- A server from 21 September 2026 or later, second deploy of that day.
+
 ## 0.2.0
 
 ### Added

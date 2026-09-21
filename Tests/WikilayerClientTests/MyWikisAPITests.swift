@@ -48,26 +48,6 @@ struct MyWikisAPITests {
         #expect(asked.headers["Authorization"] == "Bearer tok-en")
     }
 
-    @Test("a reader's own wiki carries its icon and whether it keeps pages under pages")
-    func rowDescribesTheWiki() async throws {
-        let (api, stub) = stubbedAPI()
-        stub.answers(
-            """
-            {"wikis":[
-              {"id":2982,"title":"Guide","url_path":"https://wikilayer.org/smee/guide",
-               "icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png","pages_tree":true,
-               "updated_at":"2026-08-25T10:00:00.5Z","visibility":"private","mine":true}
-            ],"has_more":false}
-            """
-        )
-
-        let page = try await api.myWikis(after: nil, as: credential)
-
-        let row = try #require(page.wikis.first)
-        #expect(row.iconURL?.lastPathComponent == "abcdefgh.png")
-        #expect(row.pagesTree)
-    }
-
     @Test("a wiki that is no longer the reader's arrives with its id and nothing else")
     func removedRow() async throws {
         let (api, stub) = stubbedAPI()

@@ -21,6 +21,9 @@ public struct SyncNode: Codable, Sendable, Equatable {
 
     public let pageID: Int64
 
+    public let iconURL: URL?
+    public let pagesTree: Bool
+
     public let translationGroup: Int64
     public let changedAt: Date
     public let deleted: Bool
@@ -36,6 +39,8 @@ public struct SyncNode: Codable, Sendable, Equatable {
         language: String = "",
         sortKey: String = "",
         pageID: Int64 = 0,
+        iconURL: URL? = nil,
+        pagesTree: Bool = false,
         translationGroup: Int64 = 0,
         deleted: Bool = false
     ) {
@@ -48,6 +53,8 @@ public struct SyncNode: Codable, Sendable, Equatable {
         self.language = language
         self.sortKey = sortKey
         self.pageID = pageID
+        self.iconURL = iconURL
+        self.pagesTree = pagesTree
         self.translationGroup = translationGroup
         self.changedAt = changedAt
         self.deleted = deleted
@@ -58,6 +65,8 @@ public struct SyncNode: Codable, Sendable, Equatable {
         case specialRole = "special_role"
         case sortKey = "sort_key"
         case pageID = "page_id"
+        case iconURL = "icon_url"
+        case pagesTree = "pages_tree"
         case translationGroup = "translation_group"
         case changedAt = "changed_at"
     }
@@ -73,6 +82,8 @@ public struct SyncNode: Codable, Sendable, Equatable {
         language = try box.decodeIfPresent(String.self, forKey: .language) ?? ""
         sortKey = try box.decodeIfPresent(String.self, forKey: .sortKey) ?? ""
         pageID = try box.decodeIfPresent(Int64.self, forKey: .pageID) ?? 0
+        iconURL = try box.decodeIfPresent(URL.self, forKey: .iconURL)
+        pagesTree = try box.decodeIfPresent(Bool.self, forKey: .pagesTree) ?? false
         translationGroup = try box.decodeIfPresent(Int64.self, forKey: .translationGroup) ?? 0
         changedAt = try box.decode(Date.self, forKey: .changedAt)
         deleted = try box.decodeIfPresent(Bool.self, forKey: .deleted) ?? false

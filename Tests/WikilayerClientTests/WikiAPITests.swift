@@ -71,14 +71,14 @@ struct WikiAPITests {
         #expect(pages[2982] == 0, "the wiki belongs to no page")
     }
 
-    @Test("a wiki in the directory carries its icon and whether it keeps pages under pages")
+    @Test("a wiki the reader does not hold yet is offered with its icon")
     func directoryRowDescribesTheWiki() async throws {
         let (api, stub) = stubbedAPI()
         stub.answers(
             """
             {"wikis":[
               {"id":2982,"title":"Guide","url_path":"/smee-again/guide",
-               "icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png","pages_tree":true,
+               "icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png",
                "updated_at":"2026-08-25T10:00:00Z"},
               {"id":1025,"title":"Flat","url_path":"/smee-again/flat",
                "updated_at":"2026-08-25T10:00:00Z"}
@@ -89,9 +89,33 @@ struct WikiAPITests {
         let page = try await api.wikis(matching: "guide")
 
         #expect(page.wikis[0].iconURL?.lastPathComponent == "abcdefgh.png")
-        #expect(page.wikis[0].pagesTree)
         #expect(page.wikis[1].iconURL == nil, "a wiki with no icon says nothing about one")
-        #expect(!page.wikis[1].pagesTree)
+    }
+
+    @Test("a wiki says what it looks like on its own node, which is how every reader gets it")
+    func theWikiNodeCarriesTheWikisFields() async throws {
+        let (api, stub) = stubbedAPI()
+        stub.answers(
+            """
+            {"nodes":[
+              {"id":2982,"path":"2982","kind":"wiki","title":"Guide","pages_tree":true,
+               "icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png",
+               "changed_at":"2026-08-25T10:00:00Z"},
+              {"id":4401,"path":"2982.4401","kind":"page","title":"Agent rules","page_id":4401,
+               "changed_at":"2026-08-25T10:00:01Z"}
+            ],"has_more":false}
+            """
+        )
+
+        let nodes = try await api.sync(wikiID: 2982, after: nil).nodes
+
+        #expect(
+            nodes[0].iconURL?.lastPathComponent == "abcdefgh.png",
+            "a reader who only follows a wiki is never listed it, so this is the one answer that reaches them"
+        )
+        #expect(nodes[0].pagesTree)
+        #expect(nodes[1].iconURL == nil, "a page is not a wiki and carries none of this")
+        #expect(!nodes[1].pagesTree)
     }
 
     @Test("the directory answers with wikis to follow, and says whether there are more")
@@ -147,8 +171,7 @@ struct WikiAPITests {
             """
             {"wiki_id":2982,"node_id":4401,"language":"en","wiki_title":"Guide",
              "wiki_url_path":"/smee-again/guide",
-             "wiki_icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png",
-             "wiki_pages_tree":true}
+             "wiki_icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png"}
             """
         )
         let link = try #require(URL(string: "https://wikilayer.org/smee-again/guide/4401"))
@@ -159,7 +182,6 @@ struct WikiAPITests {
             found.wikiIconURL?.lastPathComponent == "abcdefgh.png",
             "a wiki followed from a link is stored from this answer alone, so what it leaves out the reader never gets"
         )
-        #expect(found.wikiPagesTree)
     }
 
     @Test("an empty query asks for the directory whole, without an empty filter")

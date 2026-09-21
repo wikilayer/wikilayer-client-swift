@@ -6,7 +6,6 @@ public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
     public let title: String
     public let urlPath: String
     public let iconURL: URL?
-    public let pagesTree: Bool
     public let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
@@ -14,7 +13,6 @@ public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
         case title
         case urlPath = "url_path"
         case iconURL = "icon_url"
-        case pagesTree = "pages_tree"
         case updatedAt = "updated_at"
     }
 
@@ -23,14 +21,12 @@ public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
         title: String,
         urlPath: String,
         updatedAt: Date,
-        iconURL: URL? = nil,
-        pagesTree: Bool = false
+        iconURL: URL? = nil
     ) {
         self.id = id
         self.title = title
         self.urlPath = urlPath
         self.iconURL = iconURL
-        self.pagesTree = pagesTree
         self.updatedAt = updatedAt
     }
 
@@ -40,7 +36,6 @@ public struct WikiSummary: Codable, Sendable, Identifiable, Equatable {
         title = try box.decodeIfPresent(String.self, forKey: .title) ?? ""
         urlPath = try box.decodeIfPresent(String.self, forKey: .urlPath) ?? ""
         iconURL = try box.decodeIfPresent(URL.self, forKey: .iconURL)
-        pagesTree = try box.decodeIfPresent(Bool.self, forKey: .pagesTree) ?? false
         updatedAt = try box.decode(Date.self, forKey: .updatedAt)
     }
 }
@@ -53,7 +48,6 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
     public let wikiTitle: String
     public let wikiURLPath: String
     public let wikiIconURL: URL?
-    public let wikiPagesTree: Bool
 
     enum CodingKeys: String, CodingKey {
         case wikiID = "wiki_id"
@@ -62,7 +56,6 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
         case wikiTitle = "wiki_title"
         case wikiURLPath = "wiki_url_path"
         case wikiIconURL = "wiki_icon_url"
-        case wikiPagesTree = "wiki_pages_tree"
     }
 
     public init(
@@ -71,8 +64,7 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
         language: String = "",
         wikiTitle: String = "",
         wikiURLPath: String = "",
-        wikiIconURL: URL? = nil,
-        wikiPagesTree: Bool = false
+        wikiIconURL: URL? = nil
     ) {
         self.wikiID = wikiID
         self.nodeID = nodeID
@@ -80,7 +72,6 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
         self.wikiTitle = wikiTitle
         self.wikiURLPath = wikiURLPath
         self.wikiIconURL = wikiIconURL
-        self.wikiPagesTree = wikiPagesTree
     }
 
     public init(from decoder: any Decoder) throws {
@@ -91,7 +82,6 @@ public struct ResolvedAddress: Codable, Sendable, Equatable {
         wikiTitle = try box.decodeIfPresent(String.self, forKey: .wikiTitle) ?? ""
         wikiURLPath = try box.decodeIfPresent(String.self, forKey: .wikiURLPath) ?? ""
         wikiIconURL = try box.decodeIfPresent(URL.self, forKey: .wikiIconURL)
-        wikiPagesTree = try box.decodeIfPresent(Bool.self, forKey: .wikiPagesTree) ?? false
     }
 }
 
