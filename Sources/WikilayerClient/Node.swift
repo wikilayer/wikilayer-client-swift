@@ -19,6 +19,8 @@ public struct SyncNode: Codable, Sendable, Equatable {
 
     public let sortKey: String
 
+    public let pageID: Int64
+
     public let translationGroup: Int64
     public let changedAt: Date
     public let deleted: Bool
@@ -33,6 +35,7 @@ public struct SyncNode: Codable, Sendable, Equatable {
         markdown: String = "",
         language: String = "",
         sortKey: String = "",
+        pageID: Int64 = 0,
         translationGroup: Int64 = 0,
         deleted: Bool = false
     ) {
@@ -44,6 +47,7 @@ public struct SyncNode: Codable, Sendable, Equatable {
         self.markdown = markdown
         self.language = language
         self.sortKey = sortKey
+        self.pageID = pageID
         self.translationGroup = translationGroup
         self.changedAt = changedAt
         self.deleted = deleted
@@ -53,6 +57,7 @@ public struct SyncNode: Codable, Sendable, Equatable {
         case id, path, kind, title, markdown, language, deleted
         case specialRole = "special_role"
         case sortKey = "sort_key"
+        case pageID = "page_id"
         case translationGroup = "translation_group"
         case changedAt = "changed_at"
     }
@@ -67,6 +72,7 @@ public struct SyncNode: Codable, Sendable, Equatable {
         markdown = try box.decodeIfPresent(String.self, forKey: .markdown) ?? ""
         language = try box.decodeIfPresent(String.self, forKey: .language) ?? ""
         sortKey = try box.decodeIfPresent(String.self, forKey: .sortKey) ?? ""
+        pageID = try box.decodeIfPresent(Int64.self, forKey: .pageID) ?? 0
         translationGroup = try box.decodeIfPresent(Int64.self, forKey: .translationGroup) ?? 0
         changedAt = try box.decode(Date.self, forKey: .changedAt)
         deleted = try box.decodeIfPresent(Bool.self, forKey: .deleted) ?? false
@@ -75,8 +81,6 @@ public struct SyncNode: Codable, Sendable, Equatable {
     public var nodePath: NodePath { NodePath(path) }
 
     public var parentID: Int64 { nodePath.parent }
-
-    public var pageID: Int64 { nodePath.page }
 
     public var depth: Int { nodePath.depth }
 }

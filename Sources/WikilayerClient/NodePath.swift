@@ -18,10 +18,6 @@ public struct NodePath: Equatable, Sendable {
         id(at: 0)
     }
 
-    public var page: Int64 {
-        id(at: 1)
-    }
-
     public var parent: Int64 {
         id(at: labels.count - 2)
     }

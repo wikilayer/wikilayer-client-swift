@@ -41,6 +41,59 @@ struct WikiAPITests {
         #expect(!asked.contains("since="), "a first sync must not carry a cursor")
     }
 
+    @Test("every node says which page it belongs to, and the server is the one that knows")
+    func thePageANodeBelongsTo() async throws {
+        let (api, stub) = stubbedAPI()
+        stub.answers(
+            """
+            {"nodes":[
+              {"id":2982,"path":"2982","kind":"wiki","title":"Guide",
+               "changed_at":"2026-08-25T10:00:00Z"},
+              {"id":4401,"path":"2982.4401","kind":"page","title":"Agent rules","page_id":4401,
+               "changed_at":"2026-08-25T10:00:01Z"},
+              {"id":4402,"path":"2982.4401.4402","kind":"page","title":"Nested","page_id":4402,
+               "changed_at":"2026-08-25T10:00:02Z"},
+              {"id":4403,"path":"2982.4401.4402.4403","kind":"block","title":"Under the nested page",
+               "page_id":4402,"changed_at":"2026-08-25T10:00:03Z"}
+            ],"has_more":false}
+            """
+        )
+
+        let batch = try await api.sync(wikiID: 2982, after: nil)
+
+        let pages = Dictionary(uniqueKeysWithValues: batch.nodes.map { ($0.id, $0.pageID) })
+        #expect(
+            pages[4403] == 4402,
+            "a path carries ids and no kinds, so a reader that worked this out itself would stitch the block into the page above"
+        )
+        #expect(pages[4402] == 4402, "a page belongs to its own document")
+        #expect(pages[4401] == 4401)
+        #expect(pages[2982] == 0, "the wiki belongs to no page")
+    }
+
+    @Test("a wiki in the directory carries its icon and whether it keeps pages under pages")
+    func directoryRowDescribesTheWiki() async throws {
+        let (api, stub) = stubbedAPI()
+        stub.answers(
+            """
+            {"wikis":[
+              {"id":2982,"title":"Guide","url_path":"/smee-again/guide",
+               "icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png","pages_tree":true,
+               "updated_at":"2026-08-25T10:00:00Z"},
+              {"id":1025,"title":"Flat","url_path":"/smee-again/flat",
+               "updated_at":"2026-08-25T10:00:00Z"}
+            ],"has_more":false}
+            """
+        )
+
+        let page = try await api.wikis(matching: "guide")
+
+        #expect(page.wikis[0].iconURL?.lastPathComponent == "abcdefgh.png")
+        #expect(page.wikis[0].pagesTree)
+        #expect(page.wikis[1].iconURL == nil, "a wiki with no icon says nothing about one")
+        #expect(!page.wikis[1].pagesTree)
+    }
+
     @Test("the directory answers with wikis to follow, and says whether there are more")
     func directory() async throws {
         let (api, stub) = stubbedAPI()
@@ -85,6 +138,28 @@ struct WikiAPITests {
             asked.contains("block-39340"),
             "the anchor is part of the address and has to travel"
         )
+    }
+
+    @Test("resolving a link describes the wiki behind it the way the directory does")
+    func resolvingDescribesTheWiki() async throws {
+        let (api, stub) = stubbedAPI()
+        stub.answers(
+            """
+            {"wiki_id":2982,"node_id":4401,"language":"en","wiki_title":"Guide",
+             "wiki_url_path":"/smee-again/guide",
+             "wiki_icon_url":"https://wikilayer.org/s/icons/2982/abcdefgh.png",
+             "wiki_pages_tree":true}
+            """
+        )
+        let link = try #require(URL(string: "https://wikilayer.org/smee-again/guide/4401"))
+
+        let found = try await api.resolve(link)
+
+        #expect(
+            found.wikiIconURL?.lastPathComponent == "abcdefgh.png",
+            "a wiki followed from a link is stored from this answer alone, so what it leaves out the reader never gets"
+        )
+        #expect(found.wikiPagesTree)
     }
 
     @Test("an empty query asks for the directory whole, without an empty filter")

@@ -10,28 +10,27 @@ struct NodePathTests {
         let block = NodePath("2982.4401.3903")
 
         #expect(block.wiki == 2982)
-        #expect(block.page == 4401)
         #expect(block.parent == 4401)
         #expect(block.depth == 2)
     }
 
-    @Test("a wiki answers with itself and sits on no page")
+    @Test("a wiki answers with itself and hangs from nothing")
     func theRoot() {
         let root = NodePath("2982")
 
         #expect(root.wiki == 2982)
-        #expect(root.page == NodePath.none)
         #expect(root.parent == NodePath.none)
         #expect(root.depth == 0)
     }
 
-    @Test("a page is its own page and hangs from its wiki")
+    @Test("a page hangs from what is above it, which need not be the wiki")
     func aPage() {
-        let page = NodePath("2982.4401")
-
-        #expect(page.page == 4401)
-        #expect(page.parent == 2982)
-        #expect(page.depth == 1)
+        #expect(NodePath("2982.4401").parent == 2982)
+        #expect(NodePath("2982.4401").depth == 1)
+        #expect(
+            NodePath("2982.4401.4402").parent == 4401,
+            "with pages under pages the node above is a page as often as it is the wiki"
+        )
     }
 
     @Test("a path that names no wiki answers with nothing rather than guessing")

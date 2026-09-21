@@ -13,7 +13,7 @@ decides how a received `SyncNode` is stored and when another pass starts.
 Add the package dependency and the `WikilayerClient` product:
 
 ```swift
-.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.1.4")
+.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.2.0")
 ```
 
 ```swift
