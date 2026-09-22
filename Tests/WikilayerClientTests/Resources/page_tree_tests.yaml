@@ -1,0 +1,231 @@
+# The cases every port of this client answers for the tree of pages.
+# The leading port is the Swift client; other ports hold a copy of this file and a
+# test that checks the copy against it.
+#
+# A tree is the pages of one wiki in one language, handed in as the caller holds them.
+# `parent` is the node the page hangs from, which is the wiki itself for a page at the
+# top. `sort` is the server's order among siblings; where it is left out it is "10",
+# so a case that says nothing about order says all siblings sort alike. `home: true`
+# marks the page a wiki is read from.
+#
+# Pages are listed here in an order that is NOT the order they come back in, so a port
+# that keeps the order it was handed, or sorts by id, fails.
+
+trees:
+  - name: islands
+    pages:
+      - { id: 20, parent: 1, title: Weather, sort: "20" }
+      - { id: 14, parent: 10, title: Summer, sort: "20" }
+      - { id: 10, parent: 1, title: Ferries }
+      - { id: 12, parent: 10, title: Winter }
+
+  - name: islands with a home
+    pages:
+      - { id: 20, parent: 1, title: Weather, sort: "20" }
+      - { id: 10, parent: 1, title: Ferries }
+      - { id: 1000, parent: 1, title: Islands, sort: "99", home: true }
+      - { id: 12, parent: 10, title: Winter }
+
+  - name: four deep
+    pages:
+      - { id: 40, parent: 30, title: Storms }
+      - { id: 10, parent: 2, title: Coasts }
+      - { id: 30, parent: 20, title: Winter }
+      - { id: 20, parent: 10, title: Shores }
+
+  - name: flat
+    pages:
+      - { id: 40, parent: 2, title: Harbours, sort: "20" }
+      - { id: 30, parent: 2, title: Shores }
+
+  - name: one page
+    pages:
+      - { id: 60, parent: 4, title: Keepers }
+
+  - name: two pages
+    pages:
+      - { id: 70, parent: 5, title: Lamps }
+      - { id: 71, parent: 5, title: Lenses, sort: "20" }
+
+  - name: orphan
+    pages:
+      - { id: 12, parent: 10, title: Winter }
+
+  - name: a cycle
+    pages:
+      - { id: 10, parent: 1, title: Ferries }
+      - { id: 20, parent: 30, title: Winter }
+      - { id: 30, parent: 20, title: Summer }
+
+  - name: its own parent
+    pages:
+      - { id: 7, parent: 7, title: Alone }
+
+  - name: twice over
+    pages:
+      - { id: 10, parent: 1, title: Ferries }
+      - { id: 10, parent: 1, title: Ferries }
+      - { id: 11, parent: 10, title: Timetable }
+
+  - name: empty
+    pages: []
+
+shape:
+  - case: siblings come back in the server's order, not the order they were handed in
+    tree: islands
+    roots: [10, 20]
+    children:
+      - { page: 10, pages: [12, 14] }
+
+  - case: the home page leads, whatever it sorts as
+    tree: islands with a home
+    roots: [1000, 10, 20]
+    children:
+      - { page: 1000, pages: [] }
+
+  - case: a page under a page is kept under it, however deep
+    tree: four deep
+    roots: [10]
+    children:
+      - { page: 10, pages: [20] }
+      - { page: 20, pages: [30] }
+      - { page: 30, pages: [40] }
+      - { page: 40, pages: [] }
+
+  - case: a wiki that keeps no pages under pages reads as one flat list
+    tree: flat
+    roots: [30, 40]
+    children:
+      - { page: 30, pages: [] }
+
+  - case: a page whose parent was not handed in stands as a root of its own
+    tree: orphan
+    roots: [12]
+    children:
+      - { page: 12, pages: [] }
+
+  - case: pages whose parents point at each other are kept, not dropped
+    tree: a cycle
+    roots: [10, 20]
+    children:
+      - { page: 20, pages: [30] }
+      - { page: 30, pages: [] }
+
+  - case: a page that is its own parent is a page, not an empty wiki
+    tree: its own parent
+    roots: [7]
+    children:
+      - { page: 7, pages: [] }
+
+  - case: a page handed in twice is kept once
+    tree: twice over
+    roots: [10]
+    children:
+      - { page: 10, pages: [11] }
+
+  - case: no pages make no tree
+    tree: empty
+    roots: []
+    children: []
+
+outline:
+  - case: an open branch reads as one list, each page carrying how deep it sits
+    tree: islands
+    expanded: [10]
+    rows:
+      - { page: 10, depth: 0, branches: true }
+      - { page: 12, depth: 1, branches: false }
+      - { page: 14, depth: 1, branches: false }
+      - { page: 20, depth: 0, branches: false }
+
+  - case: depth counts every level, not just the first
+    tree: four deep
+    expanded: [10, 20, 30]
+    rows:
+      - { page: 10, depth: 0, branches: true }
+      - { page: 20, depth: 1, branches: true }
+      - { page: 30, depth: 2, branches: true }
+      - { page: 40, depth: 3, branches: false }
+
+  - case: a branch nobody opened keeps its pages to itself and says it has them
+    tree: islands
+    expanded: []
+    rows:
+      - { page: 10, depth: 0, branches: true }
+      - { page: 20, depth: 0, branches: false }
+
+  - case: an open branch under a closed one stays hidden
+    tree: four deep
+    expanded: [20, 30]
+    rows:
+      - { page: 10, depth: 0, branches: true }
+
+  - case: an id nobody has opens nothing
+    tree: islands
+    expanded: [999]
+    rows:
+      - { page: 10, depth: 0, branches: true }
+      - { page: 20, depth: 0, branches: false }
+
+  - case: no pages make no rows
+    tree: empty
+    expanded: []
+    rows: []
+
+neighbours:
+  - case: the next page is the one a reader meets next going down the tree
+    tree: islands
+    page: 12
+    previous: 10
+    next: 14
+
+  - case: a page with pages under it steps into the first of them
+    tree: four deep
+    page: 10
+    previous: 40
+    next: 20
+
+  - case: reading closes through the home page instead of stopping at the last page
+    tree: islands with a home
+    page: 20
+    previous: 12
+    next: 1000
+
+  - case: the home page leads back to the last page of the wiki
+    tree: islands with a home
+    page: 1000
+    previous: 20
+    next: 10
+
+noNeighbours:
+  - case: one page has nowhere to step
+    tree: one page
+    page: 60
+
+  - case: two pages are not offered as each other's neighbours both ways
+    tree: two pages
+    page: 70
+
+  - case: a page of another wiki has no neighbours here
+    tree: islands
+    page: 99
+
+  - case: no pages, nowhere to step
+    tree: empty
+    page: 10
+
+ancestors:
+  - case: the pages above a page are what has to stand open for it to show
+    tree: four deep
+    page: 40
+    above: [10, 20, 30]
+
+  - case: a page at the root stands open by itself
+    tree: islands
+    page: 10
+    above: []
+
+  - case: a page of another wiki opens nothing here
+    tree: islands
+    page: 99
+    above: []

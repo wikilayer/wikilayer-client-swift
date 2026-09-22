@@ -7,13 +7,18 @@ The Swift client for the Wikilayer API. It owns the requests and responses that
 cross the network: authentication, the public directory, address resolution,
 wiki synchronisation and the live change channel.
 
+It owns the shape of what comes back as well: the path a node carries, and the
+tree the pages of a wiki form, so that two apps holding the same wiki read it in
+the same order.
+
 It does not own a local database, screen state or background scheduling. An app
-decides how a received `SyncNode` is stored and when another pass starts.
+decides how a received `SyncNode` is stored, when another pass starts, and which
+branches of the page tree stand open on screen.
 
 Add the package dependency and the `WikilayerClient` product:
 
 ```swift
-.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.3.0")
+.package(url: "https://github.com/wikilayer/wikilayer-client-swift.git", from: "0.4.0")
 ```
 
 ```swift

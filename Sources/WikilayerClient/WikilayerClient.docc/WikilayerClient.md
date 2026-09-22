@@ -59,3 +59,11 @@ statuses. One-use authentication operations are never retried. See
 - ``SyncBatch``
 - ``ResolvedAddress``
 - ``NodePath``
+
+### The tree a wiki's pages make
+
+- ``PageInTree``
+- ``PageBranch``
+- ``PageOutlineRow``
+- ``PageNeighbours``
+- ``PageStep``

@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "WikilayerClient", targets: ["WikilayerClient"])
     ],
     dependencies: [
+        .package(url: "https://github.com/botforge-pro/swift-embed", from: "1.5.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0")
     ],
     targets: [
@@ -19,6 +20,13 @@ let package = Package(
             name: "WikilayerClient",
             resources: [.process("Resources")]
         ),
-        .testTarget(name: "WikilayerClientTests", dependencies: ["WikilayerClient"])
+        .testTarget(
+            name: "WikilayerClientTests",
+            dependencies: [
+                "WikilayerClient",
+                .product(name: "SwiftEmbed", package: "swift-embed")
+            ],
+            resources: [.process("Resources")]
+        )
     ]
 )
