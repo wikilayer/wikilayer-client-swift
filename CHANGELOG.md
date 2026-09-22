@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+### Changed
+
+- The shared corpus now says what a sort key past ASCII does to the order of
+  siblings: it is read by the code points of its characters. This port already
+  answered that way, the Kotlin port did not, and a wiki whose sort keys reach past
+  the basic plane came out in a different order there. Both ports move to this
+  minor together.
+
 ## 0.4.0
 
 ### Added

@@ -70,12 +70,27 @@ trees:
   - name: empty
     pages: []
 
+  # The last two sort the other way round wherever strings compare by UTF-16 code unit:
+  # the brace stands below the surrogate that opens the clef, and above its code point.
+  - name: sorted past ascii
+    pages:
+      - { id: 30, parent: 1, title: Clef, sort: "𝄞" }
+      - { id: 10, parent: 1, title: Zed, sort: "z" }
+      - { id: 20, parent: 1, title: Be, sort: "б" }
+      - { id: 40, parent: 1, title: Brace, sort: "｝" }
+
 shape:
   - case: siblings come back in the server's order, not the order they were handed in
     tree: islands
     roots: [10, 20]
     children:
       - { page: 10, pages: [12, 14] }
+
+  - case: sort keys are read by the code points of their characters, not by their units
+    tree: sorted past ascii
+    roots: [10, 20, 40, 30]
+    children:
+      - { page: 10, pages: [] }
 
   - case: the home page leads, whatever it sorts as
     tree: islands with a home
