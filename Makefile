@@ -1,6 +1,10 @@
 .DEFAULT_GOAL := build
 
-.PHONY: install-tools format comments lint test-build test docs build install
+.PHONY: install-tools format comments lint test-build test docs build install sync-yaml
+
+sync-yaml:
+	mkdir -p ../wikilayer-client-kotlin/src/test/resources
+	cp Tests/WikilayerClientTests/Resources/*.yaml ../wikilayer-client-kotlin/src/test/resources/
 
 install-tools:
 	brew install swiftlint swift-format
